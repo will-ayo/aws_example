@@ -7,24 +7,28 @@ class TaxiRide(BaseModel):
     Pydantic model for validating taxi ride data.
     
     Attributes:
-        pickup_datetime: Time when the ride started
-        dropoff_datetime: Time when the ride ended
+        tpep_pickup_datetime: Time when the ride started
+        tpep_dropoff_datetime: Time when the ride ended
         passenger_count: Number of passengers (1-9)
         trip_distance: Distance of the trip in miles
         fare_amount: Cost of the trip
-        pickup_location_id: ID of pickup location
-        dropoff_location_id: ID of dropoff location
+        PULocationID: Pickup location ID
+        DOLocationID: Dropoff location ID
     """
-    pickup_datetime: datetime
-    dropoff_datetime: datetime
-    passenger_count: int = Field(gt=0, lt=10)
+    tpep_pickup_datetime: datetime
+    tpep_dropoff_datetime: datetime
+    passenger_count: Optional[int] = Field(gt=0, lt=10)
     trip_distance: float = Field(gt=0)
     fare_amount: float = Field(gt=0)
-    pickup_location_id: int
-    dropoff_location_id: int
+    PULocationID: int
+    DOLocationID: int
     
-    @validator('dropoff_datetime')
+    @validator('tpep_dropoff_datetime')
     def validate_dropoff_time(cls, v, values):
-        if 'pickup_datetime' in values and v < values['pickup_datetime']:
+        if 'tpep_pickup_datetime' in values and v < values['tpep_pickup_datetime']:
             raise ValueError('dropoff_datetime must be after pickup_datetime')
-        return v 
+        return v
+
+    class Config:
+        # Allow population by field name for flexibility
+        allow_population_by_field_name = True 
