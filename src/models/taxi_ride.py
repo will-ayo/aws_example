@@ -1,6 +1,7 @@
 from datetime import datetime
 from pydantic import BaseModel, Field, validator
 from typing import Optional
+import json
 
 class TaxiRide(BaseModel):
     """
@@ -17,9 +18,9 @@ class TaxiRide(BaseModel):
     """
     tpep_pickup_datetime: datetime
     tpep_dropoff_datetime: datetime
-    passenger_count: Optional[int] = Field(gt=0, lt=10)
-    trip_distance: float = Field(gt=0)
-    fare_amount: float = Field(gt=0)
+    passenger_count: Optional[int] = Field(ge=0, lt=10)
+    trip_distance: float = Field(ge=0)
+    fare_amount: float = Field(ge=0)
     PULocationID: int
     DOLocationID: int
     
@@ -29,6 +30,16 @@ class TaxiRide(BaseModel):
             raise ValueError('dropoff_datetime must be after pickup_datetime')
         return v
 
+    def dict(self, *args, **kwargs):
+        """Convert model to dictionary with ISO format dates"""
+        d = super().dict(*args, **kwargs)
+        d['tpep_pickup_datetime'] = self.tpep_pickup_datetime.isoformat()
+        d['tpep_dropoff_datetime'] = self.tpep_dropoff_datetime.isoformat()
+        return d
+
     class Config:
         # Allow population by field name for flexibility
-        allow_population_by_field_name = True 
+        allow_population_by_field_name = True
+        json_encoders = {
+            datetime: lambda v: v.isoformat()
+        } 
